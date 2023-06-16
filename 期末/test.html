@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>小球躲避</title>
+  <style>
+    #game-container {
+      width: 400px;
+      height: 400px;
+      border: 1px solid #000;
+      position: relative;
+    }
+
+    #ball {
+      width: 20px;
+      height: 20px;
+      background-color: #f00;
+      border-radius: 50%;
+      position: absolute;
+      top: 190px;
+      left: 190px;
+    }
+
+    .obstacle {
+      width: 50px;
+      height: 50px;
+      background-color: #00f;
+      position: absolute;
+    }
+
+    #scoreboard {
+      margin-top: 10px;
+    }
+
+    #restart-button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>小球躲避</h1>
+  <p>使用方向鍵控制小球躲避障礙物。</p>
+  <div id="game-container">
+    <div id="ball"></div>
+  </div>
+  <div id="scoreboard">得分: <span id="score">0</span></div>
+  <button id="restart-button">重新開始</button>
+
+  <script>
+    var score = 0;
+
+    document.addEventListener("keydown", moveBall);
+    document.getElementById("restart-button").addEventListener("click", restartGame);
+
+    function moveBall(event) {
+      var ball = document.getElementById("ball");
+      var ballStyle = window.getComputedStyle(ball);
+      var ballTop = parseInt(ballStyle.top);
+      var ballLeft = parseInt(ballStyle.left);
+
+      var keyCode = event.keyCode;
+      var stepSize = 10;
+
+      if (keyCode === 37) { // 左箭頭鍵
+        if (ballLeft > 0) {
+          ball.style.left = ballLeft - stepSize + "px";
+        }
+      } else if (keyCode === 38) { // 上箭頭鍵
+        if (ballTop > 0) {
+          ball.style.top = ballTop - stepSize + "px";
+        }
+      } else if (keyCode === 39) { // 右箭頭鍵
+        if (ballLeft < 380) {
+          ball.style.left = ballLeft + stepSize + "px";
+        }
+      } else if (keyCode === 40) { // 下箭頭鍵
+        if (ballTop < 380) {
+          ball.style.top = ballTop + stepSize + "px";
+        }
+      }
+    }
+
+    setInterval(createObstacle, 1000);
+
+    function createObstacle() {
+      var obstacle = document.createElement("div");
+      obstacle.className = "obstacle";
+
+      var randomLeft = Math.floor(Math.random() * 350);
+      obstacle.style.top = "0";
+      obstacle.style.left = randomLeft + "px";
+
+      document.getElementById("game-container").appendChild(obstacle);
+      moveObstacle(obstacle);
+    }
+
+    function moveObstacle(obstacle) {
+      var obstacleStyle = window.getComputedStyle(obstacle);
+      var obstacleTop = parseInt(obstacleStyle.top);
+
+      setInterval(function() {
+        if (obstacleTop < 400) {
+          obstacle.style.top = obstacleTop + "px";
+          obstacleTop += 1;
+
+          var ball = document.getElementById("ball");
+          var ballStyle = window.getComputedStyle(ball);
+
+          if (isCollision(ballStyle, obstacleStyle)) {
+            gameOver();
+          }
+        } else {
+          obstacle.parentNode.removeChild(obstacle);
+        }
+      }, 10);
+    }
+
+    function isCollision(ballStyle, obstacleStyle) {
+      var ballTop = parseInt(ballStyle.top);
+      var ballLeft = parseInt(ballStyle.left);
+      var ballSize = parseInt(ballStyle.width);
+
+      var obstacleTop = parseInt(obstacleStyle.top);
+      var obstacleLeft = parseInt(obstacleStyle.left);
+      var obstacleSize = parseInt(obstacleStyle.width);
+
+      if (
+        ballTop < obstacleTop + obstacleSize &&
+        ballTop + ballSize > obstacleTop &&
+        ballLeft < obstacleLeft + obstacleSize &&
+        ballLeft + ballSize > obstacleLeft
+      ) {
+        return true;
+      }
+
+      return false;
+    }
+
+    function gameOver() {
+      alert("遊戲結束！得分: " + score);
+      resetGame();
+    }
+
+    function resetGame() {
+      score = 0;
+      document.getElementById("score").textContent = score;
+      clearObstacles();
+    }
+
+    function clearObstacles() {
+      var obstacles = document.getElementsByClassName("obstacle");
+      while (obstacles.length > 0) {
+        obstacles[0].parentNode.removeChild(obstacles[0]);
+      }
+    }
+
+    function restartGame() {
+      resetGame();
+      startGame();
+    }
+
+    function startGame() {
+      setInterval(function() {
+        score += 1;
+        document.getElementById("score").textContent = score;
+      }, 1000);
+    }
+    
+    startGame();
+  </script>
+</body>
+</html>
+ 
